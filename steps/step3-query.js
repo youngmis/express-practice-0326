@@ -13,21 +13,69 @@
  * 실행 방법: node steps/step3-query.js
  */
 
-import express from 'express';
+import express from "express";
 
 const app = express();
 const PORT = 8080;
 
 // 임시 데이터
 const subscriptions = [
-  { id: 1, service: 'Netflix', price: 9900, cycle: 'monthly', startDate: '2024-01-01' },
-  { id: 2, service: 'YouTube Premium', price: 14900, cycle: 'monthly', startDate: '2024-01-15' },
-  { id: 3, service: 'Spotify', price: 10900, cycle: 'monthly', startDate: '2024-02-01' },
-  { id: 4, service: 'Adobe CC', price: 79000, cycle: 'yearly', startDate: '2024-03-01' },
-  { id: 5, service: 'GitHub Pro', price: 4000, cycle: 'monthly', startDate: '2024-03-15' },
-  { id: 6, service: 'ChatGPT Plus', price: 22000, cycle: 'monthly', startDate: '2024-04-01' },
-  { id: 7, service: 'Disney+', price: 9900, cycle: 'monthly', startDate: '2024-04-15' },
-  { id: 8, service: 'Microsoft 365', price: 89000, cycle: 'yearly', startDate: '2024-05-01' },
+  {
+    id: 1,
+    service: "Netflix",
+    price: 9900,
+    cycle: "monthly",
+    startDate: "2024-01-01",
+  },
+  {
+    id: 2,
+    service: "YouTube Premium",
+    price: 14900,
+    cycle: "monthly",
+    startDate: "2024-01-15",
+  },
+  {
+    id: 3,
+    service: "Spotify",
+    price: 10900,
+    cycle: "monthly",
+    startDate: "2024-02-01",
+  },
+  {
+    id: 4,
+    service: "Adobe CC",
+    price: 79000,
+    cycle: "yearly",
+    startDate: "2024-03-01",
+  },
+  {
+    id: 5,
+    service: "GitHub Pro",
+    price: 4000,
+    cycle: "monthly",
+    startDate: "2024-03-15",
+  },
+  {
+    id: 6,
+    service: "ChatGPT Plus",
+    price: 22000,
+    cycle: "monthly",
+    startDate: "2024-04-01",
+  },
+  {
+    id: 7,
+    service: "Disney+",
+    price: 9900,
+    cycle: "monthly",
+    startDate: "2024-04-15",
+  },
+  {
+    id: 8,
+    service: "Microsoft 365",
+    price: 89000,
+    cycle: "yearly",
+    startDate: "2024-05-01",
+  },
 ];
 
 // ─────────────────────────────────────────────
@@ -40,8 +88,13 @@ const subscriptions = [
 //
 // 테스트: http://localhost:8080/api/debug-query?service=Netflix&cycle=monthly
 
+app.get("/api/debug-query", (req, res) => {
+  const service = req.query.service;
+  const cycle = req.query.cycle;
+  const allParams = req.query;
 
-
+  res.json({ service, cycle, allParams });
+});
 
 // ─────────────────────────────────────────────
 // TODO 2: 서비스 이름으로 필터링
@@ -58,27 +111,48 @@ const subscriptions = [
 //   http://localhost:8080/api/subscriptions?service=netflix
 //   http://localhost:8080/api/subscriptions?service=plus
 
-app.get('/api/subscriptions', (req, res) => {
-  const { service, cycle, minPrice, maxPrice, sort, order = 'asc', page, limit } = req.query;
+app.get("/api/subscriptions", (req, res) => {
+  const {
+    service,
+    cycle,
+    minPrice,
+    maxPrice,
+    sort,
+    order = "asc",
+    page = 1,
+    limit = 5,
+  } = req.query;
 
   let results = [...subscriptions];
 
   // TODO 2a: service 필터링
   // service 값이 있으면 results를 필터링하세요
-
+  if (service) {
+    results = results.filter(
+      (r) => r.service.toLowerCase() === service.toLowerCase(),
+    );
+  }
 
   // TODO 2b: cycle 필터링 (정확히 일치)
   // 테스트: ?cycle=yearly
-
+  if (cycle) {
+    results = results.filter(
+      (r) => r.cycle.toLowerCase() === cycle.toLowerCase(),
+    );
+  }
 
   // TODO 2c: minPrice 필터링
   // 힌트: 쿼리 파라미터는 항상 문자열이므로 Number()로 변환 필요
   // 테스트: ?minPrice=10000
-
+  if (minPrice) {
+    results = results.filter((r) => r.price >= Number(minPrice));
+  }
 
   // TODO 2d: maxPrice 필터링
   // 테스트: ?minPrice=10000&maxPrice=20000
-
+  if (maxPrice) {
+    results = results.filter((r) => r.price <= Number(maxPrice));
+  }
 
   // ─────────────────────────────────────────
   // TODO 3: 정렬 기능
@@ -90,6 +164,24 @@ app.get('/api/subscriptions', (req, res) => {
   // 힌트: results.sort((a, b) => { ... })
   // 힌트: 문자열 비교 시 .toLowerCase() 사용
 
+  const reqsort = (sort || "").toLowerCase();
+  const reqorder = order.toLowerCase();
+
+  if (reqsort === "price") {
+    results.sort((a, b) => {
+      return reqorder === "asc" ? a.price - b.price : b.price - a.price;
+    });
+  } else if (reqsort === "service") {
+    results.sort((a, b) => {
+      const namea = a.service.toLowerCase();
+      const nameb = b.service.toLowerCase();
+      if (reqorder === "asc") {
+        return namea < nameb ? -1 : 1;
+      } else {
+        return namea > nameb ? -1 : 1;
+      }
+    });
+  }
 
   // ─────────────────────────────────────────
   // TODO 4: 페이지네이션
@@ -110,12 +202,19 @@ app.get('/api/subscriptions', (req, res) => {
   //   data: [...]
   // }
 
+  const startIndex = (Number(page) - 1) * Number(limit);
+  const endIndex = Number(page) * Number(limit);
+
+  const pagearray = results.slice(startIndex, endIndex);
 
   // 기본 응답
   res.json({
     success: true,
-    count: results.length,
-    data: results,
+    page: page,
+    limit: limit,
+    total: results.length,
+    totalPages: Math.ceil(results.length / limit),
+    data: pagearray,
   });
 });
 

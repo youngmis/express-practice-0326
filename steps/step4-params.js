@@ -14,20 +14,38 @@
  * 실행 방법: node steps/step4-params.js
  */
 
-import express from 'express';
+import express from "express";
 
 const app = express();
 const PORT = 8080;
 
 // 임시 데이터
 const subscriptions = [
-  { id: 1, service: 'Netflix', price: 9900, cycle: 'monthly', startDate: '2024-01-01' },
-  { id: 2, service: 'YouTube Premium', price: 14900, cycle: 'monthly', startDate: '2024-01-15' },
-  { id: 3, service: 'Spotify', price: 10900, cycle: 'monthly', startDate: '2024-02-01' },
+  {
+    id: 1,
+    service: "Netflix",
+    price: 9900,
+    cycle: "monthly",
+    startDate: "2024-01-01",
+  },
+  {
+    id: 2,
+    service: "YouTube Premium",
+    price: 14900,
+    cycle: "monthly",
+    startDate: "2024-01-15",
+  },
+  {
+    id: 3,
+    service: "Spotify",
+    price: 10900,
+    cycle: "monthly",
+    startDate: "2024-02-01",
+  },
 ];
 
 // 전체 목록 조회 (이건 완성되어 있습니다)
-app.get('/api/subscriptions', (req, res) => {
+app.get("/api/subscriptions", (req, res) => {
   res.json({
     success: true,
     count: subscriptions.length,
@@ -55,8 +73,21 @@ app.get('/api/subscriptions', (req, res) => {
 //   http://localhost:8080/api/subscriptions/abc  → 400
 //   http://localhost:8080/api/subscriptions/-1   → 400
 
-
-
+app.get("/api/subscriptions/:id", (req, res) => {
+  const soo = Number(req.params.id);
+  const test = isNaN(soo);
+  if (test) {
+    res.status(400).json({ success: false, message: "ID는 숫자여야 합니다" });
+  } else if (isNaN(soo) <= 0) {
+    res.status(400).json({ success: false, message: "ID는 양수여야 합니다" });
+  } else if (subscriptions.find((r) => r.id === soo)) {
+    res
+      .status(404)
+      .json({ success: false, message: "구독을 찾을 수 없습니다" });
+  } else {
+    res.json({ success: true, data: subscription });
+  }
+});
 
 // ─────────────────────────────────────────────
 // TODO 2: 여러 URL 파라미터
@@ -72,8 +103,16 @@ app.get('/api/subscriptions', (req, res) => {
 //
 // 테스트: http://localhost:8080/api/users/10/subscriptions/5
 
+app.get("/api/users/:userId/subscriptions/:subId", (req, res) => {
+  const usersId = Number(req.params.userId);
+  const usersSubId = Number(req.params.subId);
 
-
+  res.json({
+    userId: usersId,
+    subscriptionId: usersSubId,
+    message: `유저 ${usersId}의 구독 ${usersSubId}번 조회`,
+  });
+});
 
 // ─────────────────────────────────────────────
 // 서버 시작

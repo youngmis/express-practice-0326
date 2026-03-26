@@ -9,22 +9,20 @@
  * TODO를 찾아서 코드를 완성하세요!
  */
 
-import express from 'express';
+import express from "express";
 
 // TODO 1: Express 앱을 생성하세요
-// const app = ???
-// const PORT = 8080;
-
-
+const app = express();
+const PORT = 8080;
 
 // ─────────────────────────────────────────────
 // TODO 2: 기본 라우트 만들기
 // ─────────────────────────────────────────────
 // GET / 요청이 오면 'Hello Express!'를 응답하세요
 // 힌트: app.get(경로, (req, res) => { ... })
-
-
-
+app.get("/", (req, res) => {
+  res.json("Hello Express!");
+});
 
 // ─────────────────────────────────────────────
 // TODO 3: 여러 라우트 만들기
@@ -32,9 +30,17 @@ import express from 'express';
 // GET /users  → '사용자 목록' 응답
 // GET /products → '상품 목록' 응답
 // GET /about → 'About 페이지' 응답
+app.get("/users", (req, res) => {
+  res.json("사용자 목록");
+});
 
+app.get("/products", (req, res) => {
+  res.json("상품 목록");
+});
 
-
+app.get("/about", (req, res) => {
+  res.json("About 페이지");
+});
 
 // ─────────────────────────────────────────────
 // TODO 4: JSON 응답 보내기
@@ -48,8 +54,13 @@ import express from 'express';
 //   { id: 2, name: 'Bob' }
 // ]
 
-
-
+app.get("/api/users", (req, res) => {
+  const data = [
+    { id: 1, name: "Alice" },
+    { id: 2, name: "Bob" },
+  ];
+  res.json(data);
+});
 
 // ─────────────────────────────────────────────
 // TODO 5: 상태 코드와 함께 응답하기
@@ -59,8 +70,13 @@ import express from 'express';
 // GET /success → 200 상태코드 + { message: 'Success' }
 // GET /error   → 404 상태코드 + { message: 'Not Found' }
 
+app.get("/success", (req, res) => {
+  res.status(200).json({ message: "Success" });
+});
 
-
+app.get("/error", (req, res) => {
+  res.status(404).json({ message: "Not Found" });
+});
 
 // ─────────────────────────────────────────────
 // TODO 6: 서버 시작하기
@@ -68,4 +84,6 @@ import express from 'express';
 // 힌트: app.listen(포트, 콜백함수)
 // 콜백에서 console.log로 서버 시작 메시지를 출력하세요
 
-
+app.listen(PORT, () =>
+  console.log(`Server is running on http://localhost:${PORT}`),
+);
